@@ -4,7 +4,7 @@ import * as _ from 'lodash';
 import * as AuthModel from '../models/auth';
 
 import { ILoginIn, IUser } from '../../types/user.types';
-const { authSecret } = require('../config');
+import config from '../config';
 
 const loginUser = ({ email, password }: ILoginIn) => {
 	return AuthModel.checkUserExists(email).then((user: IUser) => {
@@ -39,13 +39,13 @@ const createUser = ({
 };
 
 const createToken = (user: IUser) => {
-	return jwt.sign(_.omit(user, 'password'), authSecret, {
+	return jwt.sign(_.omit(user, 'password'), config.authSecret, {
 		expiresIn: '10m'
 	});
 };
 
 const createRefreshToken = (userEmail: string) => {
-	const refreshToken = jwt.sign({ type: 'refresh' }, authSecret, {
+	const refreshToken = jwt.sign({ type: 'refresh' }, config.authSecret, {
 		expiresIn: '2h' // 1 hour
 	});
 	return AuthModel.saveRefreshToken(refreshToken, userEmail)
@@ -60,7 +60,7 @@ const createRefreshToken = (userEmail: string) => {
 const validateRefreshToken = (refreshToken: string) => {
 	if (refreshToken != '') {
 		return new Promise((res, rej) => {
-			jwt.verify(refreshToken, authSecret, (err: Error) => {
+			jwt.verify(refreshToken, config.authSecret, (err: Error) => {
 				if (err) {
 					rej({
 						code: 'refreshExpired',
@@ -84,7 +84,7 @@ const validateRefreshToken = (refreshToken: string) => {
 
 const validateAuthToken = (authToken: string) => {
 	return new Promise((res, rej) => {
-		jwt.verify(authToken, authSecret, (err: Error) => {
+		jwt.verify(authToken, config.authSecret, (err: Error) => {
 			if (err) {
 				rej();
 			} else {

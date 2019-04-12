@@ -15,6 +15,7 @@ require('dotenv').config();
 
 // Route handlers
 const authApi = require('./api/v1/auth');
+const facebookAuthApi = require('./api/v1/facebook');
 
 // Create server
 const app: express.Application = express();
@@ -40,6 +41,7 @@ app.use(errorHandler());
 
 // API routes
 app.use('/api/v1/auth', authApi);
+app.use('/api/v1/auth/facebook', facebookAuthApi);
 
 const server = app.listen(app.get('port'), () => {
 	console.log(

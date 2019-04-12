@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "dev": "ts-node-dev --respawn --transpileOnly ./src/server.ts",
+    "dev": "ts-node-dev --respawn --inspect --transpileOnly ./src/server.ts",
     "prod": "tsc && NODE_ENV=production node ./build/server.js",
     "test": "jest --detectOpenHandles"
   },
@@ -10,10 +10,13 @@
     "@types/faker": "^4.1.5",
     "@types/jest": "^24.0.11",
     "@types/jsonwebtoken": "^8.3.2",
+    "@types/passport": "^1.0.0",
+    "@types/passport-facebook": "^2.1.8",
     "@types/sequelize": "^4.27.46",
     "bcrypt": "2.0.1",
     "body-parser": "^1.18.3",
     "chalk": "2.4.1",
+    "cloudinary": "^1.14.0",
     "compression": "^1.7.2",
     "cors": "2.8.3",
     "cron": "1.4.1",
@@ -29,6 +32,8 @@
     "lodash": "^4.17.10",
     "lusca": "1.5.1",
     "morgan": "^1.9.1",
+    "passport": "^0.4.0",
+    "passport-facebook": "^3.0.0",
     "path": "0.12.7",
     "pg": "^7.4.3",
     "pg-hstore": "^2.3.2",
