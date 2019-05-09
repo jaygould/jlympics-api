@@ -1,7 +1,7 @@
 'use strict';
 module.exports = {
 	up: (queryInterface: any, Sequelize: any) => {
-		return queryInterface.createTable('tracked_users', {
+		return queryInterface.createTable('tracked_users_fb', {
 			id: {
 				allowNull: false,
 				autoIncrement: true,
@@ -20,6 +20,9 @@ module.exports = {
 			last: {
 				type: Sequelize.STRING
 			},
+			fitbitId: {
+				type: Sequelize.STRING
+			},
 			createdAt: {
 				allowNull: false,
 				type: Sequelize.DATE
@@ -31,6 +34,6 @@ module.exports = {
 		});
 	},
 	down: (queryInterface: any, Sequelize: any) => {
-		return queryInterface.dropTable('tracked_users');
+		return queryInterface.dropTable('tracked_users_fb');
 	}
 };

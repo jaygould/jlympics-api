@@ -1,3 +1,4 @@
+require('dotenv').config();
 import { Router } from 'express';
 const router = Router();
 import passport from 'passport';
@@ -18,8 +19,8 @@ const FacebookStrategy = passportFacebook.Strategy;
 passport.use(
 	new FacebookStrategy(
 		{
-			clientID: '321956905180871',
-			clientSecret: 'f7df7ea344f0f8bf896eb0730afb44c4',
+			clientID: process.env.FACEBOOK_CLIENT_ID || '',
+			clientSecret: process.env.FACEBOOK_CLIENT_SECRET || '',
 			callbackURL: `${config.apiUrl}/api/v1/auth/facebook/fb-callback`,
 			profileFields: ['id', 'displayName', 'picture.type(large)', 'gender']
 		},

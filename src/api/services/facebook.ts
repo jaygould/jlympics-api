@@ -33,10 +33,21 @@ const createUser = (
 	});
 };
 
-const createFbToken = (user: string) => {
-	return jwt.sign(user, config.authSecret, {
+const createFbToken = (user: object) => {
+	return jwt.sign(_.omit(user, 'exp'), config.authSecret, {
 		expiresIn: '1h'
 	});
 };
 
-export { createUser, createFbToken };
+const getFbJwtFromCookie = (cookie: any) => {
+	let cookieData;
+	if (cookie.fbJwt) {
+		const fbJwt = cookie.fbJwt;
+		cookieData = jwt.decode(fbJwt);
+	} else {
+		cookieData = {};
+	}
+	return cookieData;
+};
+
+export { createUser, createFbToken, getFbJwtFromCookie };

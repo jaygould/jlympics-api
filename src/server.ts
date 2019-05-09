@@ -9,6 +9,7 @@ const errorHandler = require('errorhandler');
 const lusca = require('lusca');
 const expressStatusMonitor = require('express-status-monitor');
 const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
 
 // Load environment variables
 require('dotenv').config();
@@ -16,6 +17,7 @@ require('dotenv').config();
 // Route handlers
 const authApi = require('./api/v1/auth');
 const facebookAuthApi = require('./api/v1/facebook');
+const fitbitAuthApi = require('./api/v1/fitbit');
 
 // Create server
 const app: express.Application = express();
@@ -29,6 +31,7 @@ app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
+app.use(cookieParser());
 app.use(cors());
 app.use(lusca.xframe('SAMEORIGIN'));
 app.use(lusca.xssProtection(true));
@@ -42,6 +45,7 @@ app.use(errorHandler());
 // API routes
 app.use('/api/v1/auth', authApi);
 app.use('/api/v1/auth/facebook', facebookAuthApi);
+app.use('/api/v1/auth/fitbit', fitbitAuthApi);
 
 const server = app.listen(app.get('port'), () => {
 	console.log(
