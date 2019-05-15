@@ -4,6 +4,7 @@ module.exports = (sequelize: any, DataTypes: any) => {
 		{
 			fitbitId: DataTypes.STRING,
 			fitbitToken: DataTypes.STRING,
+			fitbitRefreshToken: DataTypes.STRING,
 			fitbitName: DataTypes.STRING
 		},
 		{ freezeTableName: true }

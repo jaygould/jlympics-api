@@ -4,6 +4,7 @@ const router = Router();
 import passport from 'passport';
 import passportFitbit from 'passport-fitbit-oauth2';
 
+import * as FbHelper from '../helpers/facebook';
 import * as FbService from '../services/facebook';
 import * as FitbitService from '../services/fitbit';
 
@@ -29,9 +30,10 @@ passport.use(
 		},
 		(req: any, accessToken: any, refreshToken: any, profile: any, done: any) => {
 			// when Fitbit account is created, link to the user's Facebook account
-			const cookieData: any = FbService.getFbJwtFromCookie(req.cookies);
+			const cookieData: any = FbHelper.getFbJwtFromCookie(req.cookies);
 			FitbitService.createUser(
 				accessToken,
+				refreshToken,
 				profile.id,
 				profile.displayName,
 				cookieData.fbId
@@ -59,7 +61,7 @@ router.get(
 	}),
 	(req, res) => {
 		// get the existing fbJwt and add the fitbit id to it
-		const cookieData: any = FbService.getFbJwtFromCookie(req.cookies);
+		const cookieData: any = FbHelper.getFbJwtFromCookie(req.cookies);
 		const fitbitProfile = req.user.fitbitProfile;
 		cookieData.fitbit = {
 			fitbitId: fitbitProfile.id,
@@ -69,6 +71,7 @@ router.get(
 		const fbToken = FbService.createFbToken(cookieData);
 
 		// then do a request using the access token to get the initial info for the leaderboard
+		FitbitService.getUserStats(fitbitProfile.id);
 		res.redirect(`http://localhost:3000/authed-fb?success=true&fbJwt=${fbToken}`);
 	}
 );

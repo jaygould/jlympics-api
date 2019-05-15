@@ -1,7 +1,7 @@
 'use strict';
 module.exports = {
 	up: (queryInterface: any, Sequelize: any) => {
-		return queryInterface.createTable('tracked_users_fitbit', {
+		return queryInterface.createTable('fitbit_activity', {
 			id: {
 				allowNull: false,
 				autoIncrement: true,
@@ -11,14 +11,14 @@ module.exports = {
 			fitbitId: {
 				type: Sequelize.STRING
 			},
-			fitbitToken: {
+			month: {
+				type: Sequelize.INTEGER
+			},
+			activityType: {
 				type: Sequelize.STRING
 			},
-			fitbitRefreshToken: {
-				type: Sequelize.STRING
-			},
-			fitbitName: {
-				type: Sequelize.STRING
+			activityValue: {
+				type: Sequelize.TEXT
 			},
 			createdAt: {
 				allowNull: false,
@@ -31,6 +31,6 @@ module.exports = {
 		});
 	},
 	down: (queryInterface: any, Sequelize: any) => {
-		return queryInterface.dropTable('tracked_users_fitbit');
+		return queryInterface.dropTable('fitbit_activity');
 	}
 };
