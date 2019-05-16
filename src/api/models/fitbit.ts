@@ -14,7 +14,8 @@ const findOrCreateTracked = (
 				fitbitId,
 				fitbitToken: accessToken,
 				fitbitRefreshToken: refreshToken,
-				fitbitName: displayName
+				fitbitName: displayName,
+				isActive: 1
 			});
 		} else {
 			// if user is already linked with Facebook, update their details
@@ -61,10 +62,27 @@ const saveFitbitActivity = (
 				{
 					activityValue
 				},
-				{ where: { fitbitId, month, activityType } }
+				{ where: { fitbitId, month, activityType }, returning: true }
 			);
 		}
 	});
 };
 
-export { findOrCreateTracked, getFitbitUser, saveFitbitActivity };
+const getFitbitActivity = (fitbitId: any) => {
+	return FitbitActivity.findAll({ where: { fitbitId } });
+};
+
+const updateUserFitbitStatus = (fitbitId: any, activeUpdate: boolean) => {
+	return TrackedUsers.update(
+		{ isActive: activeUpdate ? 1 : 0 },
+		{ where: { fitbitId } }
+	);
+};
+
+export {
+	findOrCreateTracked,
+	getFitbitUser,
+	saveFitbitActivity,
+	getFitbitActivity,
+	updateUserFitbitStatus
+};

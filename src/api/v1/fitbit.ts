@@ -5,6 +5,8 @@ import passport from 'passport';
 import passportFitbit from 'passport-fitbit-oauth2';
 
 import * as FbHelper from '../helpers/facebook';
+import * as FbModel from '../models/facebook';
+import * as FitbitModel from '../models/fitbit';
 import * as FbService from '../services/facebook';
 import * as FitbitService from '../services/fitbit';
 
@@ -71,9 +73,44 @@ router.get(
 		const fbToken = FbService.createFbToken(cookieData);
 
 		// then do a request using the access token to get the initial info for the leaderboard
-		FitbitService.getUserStats(fitbitProfile.id);
+		FitbitService.getUserStats(fitbitProfile.id).then((userStats: any) => {
+			FitbitService.saveUserStats(fitbitProfile.id, {
+				monthlySteps: userStats[0],
+				monthlyDistance: userStats[1]
+			});
+		});
 		res.redirect(`http://localhost:3000/authed-fb?success=true&fbJwt=${fbToken}`);
 	}
 );
+
+router.post('/get-user-data', (req, res) => {
+	const fbId = req.body.fbId;
+	// get users info from facebook
+	FbModel.getFbUser(fbId)
+		.then((fbUser: any) => {
+			return FitbitModel.getFitbitUser(fbUser.fitbitId);
+		})
+		.then((fitbitUser: any) => {
+			return Promise.all([
+				fitbitUser.isActive,
+				FitbitService.getLocalUserStats(fitbitUser.fitbitId)
+			]);
+		})
+		.then(([isActive, fitbitData]: any) => {
+			res.send({
+				isActive,
+				fitbitData
+			});
+		});
+});
+
+router.post('/update-active-status', (req, res) => {
+	const { fitbitId, activeUpdate } = req.body;
+	FitbitModel.updateUserFitbitStatus(fitbitId, activeUpdate).then(() => {
+		res.send({
+			success: true
+		});
+	});
+});
 
 module.exports = router;

@@ -29,6 +29,12 @@ const findOrCreateTracked = (
 	});
 };
 
+const getFbUser = (fbId: any) => {
+	return TrackedUsers.findOne({ where: { fbId } }).then((resp: any) => {
+		return resp;
+	});
+};
+
 const linkToFitbitAccount = (fbId: any, fitbitId: any) => {
 	return TrackedUsers.update(
 		{
@@ -38,4 +44,4 @@ const linkToFitbitAccount = (fbId: any, fitbitId: any) => {
 	);
 };
 
-export { findOrCreateTracked, linkToFitbitAccount };
+export { findOrCreateTracked, getFbUser, linkToFitbitAccount };

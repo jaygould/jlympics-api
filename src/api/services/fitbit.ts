@@ -32,41 +32,48 @@ const createUser = (
 };
 
 const getUserStats = (fitbitId: any) => {
-	const thisMonth = moment().month();
 	const startOfMonth = moment()
 		.startOf('month')
 		.format('YYYY-MM-DD');
-	return FitbitModel.getFitbitUser(fitbitId)
-		.then((user: any) => {
-			return Promise.all([
-				FitbitHelper.fitbitApiWrapper(
-					`activities/steps/date/today/${startOfMonth}.json`,
-					fitbitId,
-					user.fitbitToken
-				),
-				FitbitHelper.fitbitApiWrapper(
-					`activities/distance/date/today/${startOfMonth}.json`,
-					fitbitId,
-					user.fitbitToken
-				)
-			]);
-		})
-		.then(([monthlySteps, monthlyDistance]: any) => {
-			return Promise.all([
-				FitbitModel.saveFitbitActivity(
-					fitbitId,
-					thisMonth,
-					'steps',
-					JSON.stringify(monthlySteps)
-				),
-				FitbitModel.saveFitbitActivity(
-					fitbitId,
-					thisMonth,
-					'distance',
-					JSON.stringify(monthlyDistance)
-				)
-			]);
-		});
+	return FitbitModel.getFitbitUser(fitbitId).then((user: any) => {
+		return Promise.all([
+			FitbitHelper.fitbitApiWrapper(
+				`activities/steps/date/today/${startOfMonth}.json`,
+				fitbitId,
+				user.fitbitToken
+			),
+			FitbitHelper.fitbitApiWrapper(
+				`activities/distance/date/today/${startOfMonth}.json`,
+				fitbitId,
+				user.fitbitToken
+			)
+		]);
+	});
 };
 
-export { createUser, getUserStats };
+const saveUserStats = (
+	fitbitId: any,
+	{ monthlySteps, monthlyDistance }: any
+) => {
+	const thisMonth = moment().month();
+	return Promise.all([
+		FitbitModel.saveFitbitActivity(
+			fitbitId,
+			thisMonth,
+			'steps',
+			JSON.stringify(monthlySteps)
+		),
+		FitbitModel.saveFitbitActivity(
+			fitbitId,
+			thisMonth,
+			'distance',
+			JSON.stringify(monthlyDistance)
+		)
+	]);
+};
+
+const getLocalUserStats = (fitbitId: any) => {
+	return FitbitModel.getFitbitActivity(fitbitId);
+};
+
+export { createUser, getUserStats, saveUserStats, getLocalUserStats };

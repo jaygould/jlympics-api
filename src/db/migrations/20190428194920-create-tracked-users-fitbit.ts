@@ -20,6 +20,9 @@ module.exports = {
 			fitbitName: {
 				type: Sequelize.STRING
 			},
+			isActive: {
+				type: Sequelize.INTEGER
+			},
 			createdAt: {
 				allowNull: false,
 				type: Sequelize.DATE
