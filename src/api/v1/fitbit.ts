@@ -3,6 +3,7 @@ import { Router } from 'express';
 const router = Router();
 import passport from 'passport';
 import passportFitbit from 'passport-fitbit-oauth2';
+const moment = require('moment');
 
 import * as FbHelper from '../helpers/facebook';
 import * as FbModel from '../models/facebook';
@@ -73,12 +74,19 @@ router.get(
 		const fbToken = FbService.createFbToken(cookieData);
 
 		// then do a request using the access token to get the initial info for the leaderboard
-		FitbitService.getUserStats(fitbitProfile.id).then((userStats: any) => {
-			FitbitService.saveUserStats(fitbitProfile.id, {
-				monthlySteps: userStats[0],
-				monthlyDistance: userStats[1]
-			});
-		});
+		const thisMonth = moment().month();
+		FitbitService.getUserStats(fitbitProfile.id, thisMonth).then(
+			(userStats: any) => {
+				FitbitService.saveUserStats(
+					fitbitProfile.id,
+					{
+						monthlySteps: userStats[0],
+						monthlyDistance: userStats[1]
+					},
+					thisMonth
+				);
+			}
+		);
 		res.redirect(`http://localhost:3000/authed-fb?success=true&fbJwt=${fbToken}`);
 	}
 );
@@ -111,6 +119,28 @@ router.post('/update-active-status', (req, res) => {
 			success: true
 		});
 	});
+});
+
+router.get('/update-past-user-data', (req, res) => {
+	// ran using a cron in order to update the DB with user data
+	// in past monhts to populate the DB
+	const lastMonth = moment().month() - 1;
+	let monthCount: any;
+	for (monthCount = lastMonth; monthCount > lastMonth - 4; monthCount--) {
+		const theMonth = monthCount;
+		FitbitService.getPastUserStats(theMonth).then((usersData: any) => {
+			usersData.forEach((data: any) => {
+				FitbitService.saveUserStats(
+					data.user.fitbitId,
+					{
+						monthlySteps: data.data[0],
+						monthlyDistance: data.data[1]
+					},
+					theMonth
+				).catch(console.log);
+			});
+		});
+	}
 });
 
 module.exports = router;
