@@ -20,6 +20,9 @@ module.exports = {
 			last: {
 				type: Sequelize.STRING
 			},
+			profileImgUrl: {
+				type: Sequelize.STRING
+			},
 			fitbitId: {
 				type: Sequelize.STRING
 			},

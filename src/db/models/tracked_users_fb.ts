@@ -6,6 +6,7 @@ module.exports = (sequelize: any, DataTypes: any) => {
 			fbToken: DataTypes.STRING,
 			first: DataTypes.STRING,
 			last: DataTypes.STRING,
+			profileImgUrl: DataTypes.STRING,
 			fitbitId: DataTypes.STRING
 		},
 		{ freezeTableName: true }
