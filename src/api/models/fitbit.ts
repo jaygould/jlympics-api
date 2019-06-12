@@ -40,6 +40,12 @@ const getFitbitUsers = () => {
 	return TrackedUsers.findAll();
 };
 
+const getActiveFitbitUsers = () => {
+	return TrackedUsers.findAll({
+		where: { isActive: 1 }
+	});
+};
+
 const saveFitbitActivity = (
 	fitbitId: any,
 	month: any,
@@ -87,6 +93,7 @@ export {
 	findOrCreateTracked,
 	getFitbitUser,
 	getFitbitUsers,
+	getActiveFitbitUsers,
 	saveFitbitActivity,
 	getFitbitActivity,
 	updateUserFitbitStatus
