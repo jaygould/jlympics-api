@@ -105,9 +105,31 @@ router.post('/get-user-data', (req, res) => {
 			]);
 		})
 		.then(([isActive, fitbitData]: any) => {
+			const steps = fitbitData.filter(data => data.activityType === 'steps');
+			const distance = fitbitData.filter(data => data.activityType === 'distance');
+			const weekFormattedSteps = FitbitService.formatDataWeek(
+				'activities-steps',
+				steps
+			);
+			const weekFormattedDistance = FitbitService.formatDataWeek(
+				'activities-distance',
+				distance
+			);
+			const monthFormattedSteps = FitbitService.formatDataMonth(
+				'activities-steps',
+				steps
+			);
+			const monthFormattedDistance = FitbitService.formatDataMonth(
+				'activities-distance',
+				distance
+			);
 			res.send({
 				isActive,
-				fitbitData
+				fitbitData,
+				weekFormattedSteps,
+				weekFormattedDistance,
+				monthFormattedSteps,
+				monthFormattedDistance
 			});
 		});
 });

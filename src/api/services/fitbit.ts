@@ -110,10 +110,49 @@ const getLocalUserStats = (fitbitId: any) => {
 	return FitbitModel.getFitbitActivity(fitbitId);
 };
 
+const formatDataWeek = (activityType: string, data: any) => {
+	const withWeekCommencing = data.map((point: any) => {
+		const dataSet = JSON.parse(point.activityValue);
+		return dataSet[activityType].map((day: any) => {
+			const week = moment(day.dateTime)
+				.startOf('isoWeek')
+				.format('YYYY MM DD');
+			return {
+				week,
+				data: day
+			};
+		});
+	});
+	return [].concat.apply([], withWeekCommencing).reduce((r, a) => {
+		r[a.week] = r[a.week] || [];
+		r[a.week].push(a);
+		return r;
+	}, Object.create(null));
+};
+
+const formatDataMonth = (activityType: string, data: any) => {
+	const withMonth = data.map((point: any) => {
+		const dataSet = JSON.parse(point.activityValue);
+		const monthNum = JSON.parse(point.month);
+		const month = {
+			short: moment.monthsShort(monthNum),
+			nice: moment.months(monthNum),
+			num: monthNum
+		};
+		return {
+			month,
+			data: dataSet[activityType]
+		};
+	});
+	return withMonth;
+};
+
 export {
 	createUser,
 	getUserStats,
 	getPastUserStats,
 	saveUserStats,
-	getLocalUserStats
+	getLocalUserStats,
+	formatDataWeek,
+	formatDataMonth
 };
