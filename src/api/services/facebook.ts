@@ -21,7 +21,13 @@ const createUser = (
 			userPhoto,
 			{ use_filename: true, unique_filename: true, folder: 'jlympics' },
 			(error: any, result: any) => {
-				FbModel.findOrCreateTracked(accessToken, fbId, displayName)
+				console.log(result);
+				FbModel.findOrCreateTracked(
+					accessToken,
+					fbId,
+					displayName,
+					result.secure_url
+				)
 					.then(() => {
 						res();
 					})

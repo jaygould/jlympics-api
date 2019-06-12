@@ -4,7 +4,8 @@ const TrackedUsers = db.tracked_users_fb;
 const findOrCreateTracked = (
 	accessToken: string,
 	fbId: string,
-	displayName: string
+	displayName: string,
+	profileImgUrl: string
 ) => {
 	return TrackedUsers.findOne({ where: { fbId } }).then((resp: any) => {
 		if (!resp) {
@@ -12,7 +13,8 @@ const findOrCreateTracked = (
 				fbId,
 				fbToken: accessToken,
 				first: displayName,
-				lastName: ''
+				lastName: '',
+				profileImgUrl
 			});
 		} else {
 			// if user is already linked with Facebook, update their details
@@ -21,7 +23,8 @@ const findOrCreateTracked = (
 				{
 					fbToken: accessToken,
 					first: displayName,
-					lastName: ''
+					lastName: '',
+					profileImgUrl
 				},
 				{ where: { fbId }, returning: true }
 			);
