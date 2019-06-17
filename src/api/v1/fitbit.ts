@@ -106,10 +106,11 @@ router.post('/get-user-data', (req, res) => {
 			.then((fitbitUser: any) => {
 				return Promise.all([
 					fitbitUser.isActive,
+					FbModel.getFbUserByFitbitId(fitbitUser.fitbitId),
 					FitbitService.getLocalUserStats(fitbitUser.fitbitId)
 				]);
 			})
-			.then(([isActive, fitbitData]: any) => {
+			.then(([isActive, fbData, fitbitData]: any) => {
 				const steps = fitbitData.filter(data => data.activityType === 'steps');
 				const distance = fitbitData.filter(
 					data => data.activityType === 'distance'
@@ -130,13 +131,17 @@ router.post('/get-user-data', (req, res) => {
 					'activities-distance',
 					distance
 				);
-				res.send({
-					isActive,
-					weekFormattedSteps,
-					weekFormattedDistance,
-					monthFormattedSteps,
-					monthFormattedDistance
-				});
+				res.send([
+					{
+						isActive,
+						fitbitData,
+						fbData,
+						weekFormattedSteps,
+						weekFormattedDistance,
+						monthFormattedSteps,
+						monthFormattedDistance
+					}
+				]);
 			});
 	});
 });
@@ -187,9 +192,7 @@ router.post('/get-active-users-data', (req, res) => {
 					monthFormattedDistance
 				};
 			});
-			res.send({
-				...userData
-			});
+			res.send([...userData]);
 		});
 });
 
