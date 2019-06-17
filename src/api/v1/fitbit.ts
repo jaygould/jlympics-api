@@ -7,6 +7,7 @@ const moment = require('moment');
 import { verifyToken } from '../middleware/auth';
 
 import * as FbHelper from '../helpers/facebook';
+import * as FitbitHelper from '../helpers/fitbit';
 import * as FbModel from '../models/facebook';
 import * as FitbitModel from '../models/fitbit';
 import * as FbService from '../services/facebook';
@@ -91,6 +92,33 @@ router.get(
 		res.redirect(`http://localhost:3000/authed-fb?success=true&fbJwt=${fbToken}`);
 	}
 );
+
+router.post('/refresh-fitbit-tokens', (req, res) => {
+	FitbitModel.getFitbitUsers()
+		.then((users: any) => {
+			return Promise.all(
+				users.map(user => {
+					return FitbitHelper.fitbitRefreshTokenWrapper(user.fitbitRefreshToken);
+				})
+			);
+		})
+		.then(fitbitResponses => {
+			return Promise.all(
+				fitbitResponses.map(fitbitResponse => {
+					const {
+						user_id: fitbitId,
+						refresh_token: refreshToken,
+						access_token: accessToken
+					} = fitbitResponse;
+					return FitbitModel.updateUserFitbitRefreshToken(
+						fitbitId,
+						refreshToken,
+						accessToken
+					);
+				})
+			);
+		})
+});
 
 router.post('/get-user-data', (req, res) => {
 	const fbId = req.body.fbId;

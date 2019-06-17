@@ -32,6 +32,17 @@ const findOrCreateTracked = (
 	});
 };
 
+const updateUserFitbitRefreshToken = (
+	fitbitId: string,
+	refreshToken: string,
+	accessToken: string
+) => {
+	return TrackedUsers.update(
+		{ fitbitRefreshToken: refreshToken, fitbitToken: accessToken },
+		{ where: { fitbitId } }
+	);
+};
+
 const getFitbitUser = (fitbitId: any) => {
 	return TrackedUsers.findOne({ where: { fitbitId } });
 };
@@ -91,6 +102,7 @@ const updateUserFitbitStatus = (fitbitId: any, activeUpdate: boolean) => {
 
 export {
 	findOrCreateTracked,
+	updateUserFitbitRefreshToken,
 	getFitbitUser,
 	getFitbitUsers,
 	getActiveFitbitUsers,
