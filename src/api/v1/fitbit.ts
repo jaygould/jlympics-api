@@ -4,6 +4,7 @@ const router = Router();
 import passport from 'passport';
 import passportFitbit from 'passport-fitbit-oauth2';
 const moment = require('moment');
+import { verifyToken } from '../middleware/auth';
 
 import * as FbHelper from '../helpers/facebook';
 import * as FbModel from '../models/facebook';
@@ -205,7 +206,9 @@ router.post('/update-active-status', (req, res) => {
 	});
 });
 
-router.get('/update-past-user-data', (req, res) => {
+router.use(verifyToken());
+
+router.post('/update-past-user-data', (req, res) => {
 	// ran using a cron in order to update the DB with user data
 	// in past monhts to populate the DB
 	const lastMonth = moment().month() - 1;
