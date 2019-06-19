@@ -3,7 +3,7 @@ module.exports = (sequelize: any, DataTypes: any) => {
 		'fitbit_activity',
 		{
 			fitbitId: DataTypes.STRING,
-			month: DataTypes.INTEGER,
+			month: DataTypes.STRING,
 			activityType: DataTypes.STRING,
 			activityValue: DataTypes.STRING
 		},

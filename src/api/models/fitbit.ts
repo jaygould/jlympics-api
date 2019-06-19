@@ -59,34 +59,43 @@ const getActiveFitbitUsers = () => {
 
 const saveFitbitActivity = (
 	fitbitId: any,
-	month: any,
+	{
+		theMonth,
+		theYear
+	}: {
+		theMonth: number;
+		theYear: number;
+	},
 	activityType: any,
 	activityValue: any
 ) => {
-	return FitbitActivity.findOne({ where: { fitbitId } }).then((resp: any) => {
-		if (!resp) {
-			return FitbitActivity.create({
-				fitbitId,
-				month,
-				activityType,
-				activityValue
-			});
-		} else if (resp.month != month) {
-			return FitbitActivity.create({
-				fitbitId,
-				month,
-				activityType,
-				activityValue
-			});
-		} else if (resp.month == month) {
-			return FitbitActivity.update(
-				{
+	const month = `${theMonth}-${theYear}`;
+	return FitbitActivity.findOne({ where: { fitbitId, month } }).then(
+		(resp: any) => {
+			if (!resp) {
+				return FitbitActivity.create({
+					fitbitId,
+					month,
+					activityType,
 					activityValue
-				},
-				{ where: { fitbitId, month, activityType }, returning: true }
-			);
+				});
+			} else if (resp.month != month) {
+				return FitbitActivity.create({
+					fitbitId,
+					month,
+					activityType,
+					activityValue
+				});
+			} else if (resp.month == month) {
+				return FitbitActivity.update(
+					{
+						activityValue
+					},
+					{ where: { fitbitId, month, activityType }, returning: true }
+				);
+			}
 		}
-	});
+	);
 };
 
 const getFitbitActivity = (fitbitId: any) => {

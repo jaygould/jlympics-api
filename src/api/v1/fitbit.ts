@@ -76,8 +76,9 @@ router.get(
 		const fbToken = FbService.createFbToken(cookieData);
 
 		// then do a request using the access token to get the initial info for the leaderboard
-		const thisMonth = moment().month();
-		FitbitService.getUserStats(fitbitProfile.id, thisMonth).then(
+		const theMonth = moment().month();
+		const theYear = moment().year();
+		FitbitService.getUserStats(fitbitProfile.id, { theMonth, theYear }).then(
 			(userStats: any) => {
 				FitbitService.saveUserStats(
 					fitbitProfile.id,
@@ -85,7 +86,7 @@ router.get(
 						monthlySteps: userStats[0],
 						monthlyDistance: userStats[1]
 					},
-					thisMonth
+					{ theMonth, theYear }
 				);
 			}
 		);
@@ -118,6 +119,16 @@ router.post('/refresh-fitbit-tokens', (req, res) => {
 				})
 			);
 		})
+		.then(() => {
+			res.send({
+				success: true
+			});
+		})
+		.catch(() => {
+			res.send({
+				success: false
+			});
+		});
 });
 
 router.post('/get-user-data', (req, res) => {
@@ -237,25 +248,50 @@ router.post('/update-active-status', (req, res) => {
 router.use(verifyToken());
 
 router.post('/update-past-user-data', (req, res) => {
-	// ran using a cron in order to update the DB with user data
-	// in past monhts to populate the DB
-	const lastMonth = moment().month() - 1;
+	const thisMonth = moment().month();
+	const thisYear = moment().year();
+	const monthsBacklog = 3;
 	let monthCount: any;
-	for (monthCount = lastMonth; monthCount > lastMonth - 4; monthCount--) {
-		const theMonth = monthCount;
-		FitbitService.getPastUserStats(theMonth).then((usersData: any) => {
-			usersData.forEach((data: any) => {
-				FitbitService.saveUserStats(
-					data.user.fitbitId,
-					{
-						monthlySteps: data.data[0],
-						monthlyDistance: data.data[1]
-					},
-					theMonth
-				).catch(console.log);
+	const getUserStatsPromises = [];
+	for (
+		monthCount = thisMonth;
+		monthCount > thisMonth - monthsBacklog;
+		monthCount--
+	) {
+		// get the year and month from the previous year if the month counts
+		// back in to negative value
+		const theMonth = monthCount < 0 ? monthCount + 12 : monthCount;
+		const theYear = monthCount < 0 ? thisYear - 1 : thisYear;
+		getUserStatsPromises.push(
+			FitbitService.getPastUserStats({ theMonth, theYear }).then(
+				(usersData: any) => {
+					return Promise.all(
+						usersData.map((data: any) => {
+							return FitbitService.saveUserStats(
+								data.user.fitbitId,
+								{
+									monthlySteps: data.data[0],
+									monthlyDistance: data.data[1]
+								},
+								{ theMonth, theYear }
+							);
+						})
+					);
+				}
+			)
+		);
+	}
+	return Promise.all(getUserStatsPromises)
+		.then(updated => {
+			res.send({
+				success: true
+			});
+		})
+		.catch(() => {
+			res.send({
+				success: false
 			});
 		});
-	}
 });
 
 module.exports = router;

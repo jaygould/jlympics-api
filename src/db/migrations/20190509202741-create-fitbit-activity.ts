@@ -12,7 +12,7 @@ module.exports = {
 				type: Sequelize.STRING
 			},
 			month: {
-				type: Sequelize.INTEGER
+				type: Sequelize.STRING
 			},
 			activityType: {
 				type: Sequelize.STRING

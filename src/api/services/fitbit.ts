@@ -31,9 +31,19 @@ const createUser = (
 	});
 };
 
-const getUserStats = (fitbitId: any, month: any) => {
+const getUserStats = (
+	fitbitId: any,
+	{
+		theMonth,
+		theYear
+	}: {
+		theMonth: number;
+		theYear: number;
+	}
+) => {
 	const startOfMonth = moment()
-		.month(month)
+		.month(theMonth)
+		.year(theYear)
 		.startOf('month')
 		.format('YYYY-MM-DD');
 	return FitbitModel.getFitbitUser(fitbitId).then((user: any) => {
@@ -55,31 +65,51 @@ const getUserStats = (fitbitId: any, month: any) => {
 const saveUserStats = (
 	fitbitId: any,
 	{ monthlySteps, monthlyDistance }: any,
-	thisMonth: any
+	{
+		theMonth,
+		theYear
+	}: {
+		theMonth: number;
+		theYear: number;
+	}
 ) => {
 	return Promise.all([
 		FitbitModel.saveFitbitActivity(
 			fitbitId,
-			thisMonth,
+			{
+				theMonth,
+				theYear
+			},
 			'steps',
 			JSON.stringify(monthlySteps)
 		),
 		FitbitModel.saveFitbitActivity(
 			fitbitId,
-			thisMonth,
+			{
+				theMonth,
+				theYear
+			},
 			'distance',
 			JSON.stringify(monthlyDistance)
 		)
 	]);
 };
 
-const getPastUserStats = (month: any) => {
+const getPastUserStats = ({
+	theMonth,
+	theYear
+}: {
+	theMonth: number;
+	theYear: number;
+}) => {
 	const start = moment()
-		.month(month)
+		.month(theMonth)
+		.year(theYear)
 		.startOf('month')
 		.format('YYYY-MM-DD');
 	const end = moment()
-		.month(month)
+		.month(theMonth)
+		.year(theYear)
 		.endOf('month')
 		.format('YYYY-MM-DD');
 	return FitbitModel.getFitbitUsers().then((users: any) => {
@@ -133,7 +163,7 @@ const formatDataWeek = (activityType: string, data: any) => {
 const formatDataMonth = (activityType: string, data: any) => {
 	const withMonth = data.map((point: any) => {
 		const dataSet = JSON.parse(point.activityValue);
-		const monthNum = JSON.parse(point.month);
+		const monthNum = point.month.split('-')[0];
 		const month = {
 			short: moment.monthsShort(monthNum),
 			nice: moment.months(monthNum),
