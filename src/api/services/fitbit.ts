@@ -90,7 +90,7 @@ const saveUserStats = (
 				theYear
 			},
 			'distance',
-			JSON.stringify(monthlyDistance)
+			JSON.stringify(formatFitbitDistance(monthlyDistance))
 		)
 	]);
 };
@@ -140,6 +140,18 @@ const getLocalUserStats = (fitbitId: any) => {
 	return FitbitModel.getFitbitActivity(fitbitId);
 };
 
+const formatFitbitDistance = activity => {
+	const formatted = activity['activities-distance'].map(dayDistance => {
+		return {
+			...dayDistance,
+			value: Math.round(dayDistance.value * 100) / 100
+		};
+	});
+	return {
+		'activities-distance': formatted
+	};
+};
+
 const formatDataWeek = (activityType: string, data: any) => {
 	const withWeekCommencing = data.map((point: any) => {
 		const dataSet = JSON.parse(point.activityValue);
@@ -183,6 +195,7 @@ export {
 	getPastUserStats,
 	saveUserStats,
 	getLocalUserStats,
+	formatFitbitDistance,
 	formatDataWeek,
 	formatDataMonth
 };
