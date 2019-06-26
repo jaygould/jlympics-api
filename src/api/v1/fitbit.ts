@@ -62,7 +62,7 @@ router.get(
 router.get(
 	'/fitbit-callback',
 	passport.authenticate('fitbit', {
-		failureRedirect: 'http://localhost:3000/home?error=true'
+		failureRedirect: `${config.clientUrl}/home?error=true`
 	}),
 	(req, res) => {
 		// get the existing fbJwt and add the fitbit id to it
@@ -90,7 +90,7 @@ router.get(
 				);
 			}
 		);
-		res.redirect(`http://localhost:3000/authed-fb?success=true&fbJwt=${fbToken}`);
+		res.redirect(`${config.clientUrl}/authed-fb?success=true&fbJwt=${fbToken}`);
 	}
 );
 
@@ -98,26 +98,36 @@ router.post('/refresh-fitbit-tokens', (req, res) => {
 	FitbitModel.getFitbitUsers()
 		.then((users: any) => {
 			return Promise.all(
-				users.map(user => {
-					return FitbitHelper.fitbitRefreshTokenWrapper(user.fitbitRefreshToken);
+				users.map((user: ITrackedFitbitUser) => {
+					return user.fitbitRefreshToken
+						? FitbitHelper.fitbitRefreshTokenWrapper(user.fitbitRefreshToken)
+						: null;
 				})
 			);
 		})
-		.then(fitbitResponses => {
-			return Promise.all(
-				fitbitResponses.map(fitbitResponse => {
-					const {
-						user_id: fitbitId,
-						refresh_token: refreshToken,
-						access_token: accessToken
-					} = fitbitResponse;
-					return FitbitModel.updateUserFitbitRefreshToken(
-						fitbitId,
-						refreshToken,
-						accessToken
-					);
-				})
-			);
+		.then((fitbitResponses: ITrackedFitbitUserSource[]) => {
+			if (fitbitResponses) {
+				return Promise.all(
+					fitbitResponses.map((fitbitResponse: ITrackedFitbitUserSource) => {
+						const {
+							user_id: fitbitId,
+							refresh_token: refreshToken,
+							access_token: accessToken
+						} = fitbitResponse;
+						if (fitbitId && refreshToken && accessToken) {
+							return FitbitModel.updateUserFitbitRefreshToken(
+								fitbitId,
+								refreshToken,
+								accessToken
+							);
+						} else {
+							throw new Error('Error');
+						}
+					})
+				);
+			} else {
+				throw new Error('Error');
+			}
 		})
 		.then(() => {
 			res.send({
@@ -134,7 +144,7 @@ router.post('/refresh-fitbit-tokens', (req, res) => {
 router.post('/get-user-data', (req, res) => {
 	const fbId = req.body.fbId;
 	// get users info from facebook
-	FbModel.getFbUser(fbId).then((fbUser: any) => {
+	FbModel.getFbUser(fbId).then((fbUser: ITrackedFacebookUser) => {
 		if (!fbUser.fitbitId) {
 			res.send({
 				fitbitConnected: false,
@@ -143,55 +153,63 @@ router.post('/get-user-data', (req, res) => {
 			return;
 		}
 		return FitbitModel.getFitbitUser(fbUser.fitbitId)
-			.then((fitbitUser: any) => {
+			.then((fitbitUser: ITrackedFitbitUser) => {
 				return Promise.all([
 					fitbitUser.isActive,
 					FbModel.getFbUserByFitbitId(fitbitUser.fitbitId),
 					FitbitService.getLocalUserStats(fitbitUser.fitbitId)
 				]);
 			})
-			.then(([isActive, fbData, fitbitData]: any) => {
-				const steps = fitbitData.filter(data => data.activityType === 'steps');
-				const distance = fitbitData.filter(
-					data => data.activityType === 'distance'
-				);
-				const weekFormattedSteps = FitbitService.formatDataWeek(
-					'activities-steps',
-					steps
-				);
-				const weekFormattedDistance = FitbitService.formatDataWeek(
-					'activities-distance',
-					distance
-				);
-				const monthFormattedSteps = FitbitService.formatDataMonth(
-					'activities-steps',
-					steps
-				);
-				const monthFormattedDistance = FitbitService.formatDataMonth(
-					'activities-distance',
-					distance
-				);
-				res.send([
-					{
-						isActive,
-						fitbitData,
-						fbData,
-						weekFormattedSteps,
-						weekFormattedDistance,
-						monthFormattedSteps,
-						monthFormattedDistance
-					}
-				]);
-			});
+			.then(
+				([isActive, fbData, fitbitData]: [
+					number,
+					ITrackedFacebookUser,
+					IFitbitActivityDb[]
+				]) => {
+					const steps = fitbitData.filter(
+						(data: IFitbitActivityDb) => data.activityType === 'steps'
+					);
+					const distance = fitbitData.filter(
+						(data: IFitbitActivityDb) => data.activityType === 'distance'
+					);
+					const weekFormattedSteps = FitbitService.formatDataWeek(
+						'activities-steps',
+						steps
+					);
+					const weekFormattedDistance = FitbitService.formatDataWeek(
+						'activities-distance',
+						distance
+					);
+					const monthFormattedSteps = FitbitService.formatDataMonth(
+						'activities-steps',
+						steps
+					);
+					const monthFormattedDistance = FitbitService.formatDataMonth(
+						'activities-distance',
+						distance
+					);
+					res.send([
+						{
+							isActive,
+							fitbitData,
+							fbData,
+							weekFormattedSteps,
+							weekFormattedDistance,
+							monthFormattedSteps,
+							monthFormattedDistance
+						}
+					]);
+				}
+			);
 	});
 });
 
 router.post('/get-active-users-data', (req, res) => {
 	// get users info from facebook
 	return FitbitModel.getActiveFitbitUsers()
-		.then((fitbitUsers: any) => {
+		.then((fitbitUsers: ITrackedFitbitUser[]) => {
 			return Promise.all(
-				fitbitUsers.map((user: any) => {
+				fitbitUsers.map((user: ITrackedFitbitUser) => {
 					return Promise.all([
 						user,
 						FbModel.getFbUserByFitbitId(user.fitbitId),
@@ -201,8 +219,12 @@ router.post('/get-active-users-data', (req, res) => {
 			);
 		})
 		.then((usersData: any) => {
-			const userData = usersData.map(user => {
-				const [fitbitData, fbData, fitbitStats] = user;
+			const userData = usersData.map((user: any) => {
+				const [fitbitData, fbData, fitbitStats]: [
+					ITrackedFitbitUser,
+					ITrackedFacebookUser,
+					IFitbitActivityDb[]
+				] = user;
 				const steps = fitbitStats.filter(data => data.activityType === 'steps');
 				const distance = fitbitStats.filter(
 					data => data.activityType === 'distance'

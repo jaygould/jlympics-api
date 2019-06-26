@@ -33,7 +33,7 @@ const findOrCreateTracked = (
 };
 
 const updateUserFitbitRefreshToken = (
-	fitbitId: string,
+	fitbitId: number,
 	refreshToken: string,
 	accessToken: string
 ) => {

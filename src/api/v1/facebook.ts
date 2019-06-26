@@ -43,7 +43,7 @@ router.get('/', passport.authenticate('facebook'));
 router.get(
 	'/fb-callback',
 	passport.authenticate('facebook', {
-		failureRedirect: 'http://localhost:3000/home?error=true'
+		failureRedirect: `${config.clientUrl}/home?error=true`
 	}),
 	(req, res) => {
 		// success, so send the user's fbId back to the Next server so it can be used
@@ -51,7 +51,7 @@ router.get(
 		// should create JWT here... just sending fbId back is not safe as anyone can then
 		// use it
 		const fbToken = FbService.createFbToken(req.user);
-		res.redirect(`http://localhost:3000/authed-fb?success=true&fbJwt=${fbToken}`);
+		res.redirect(`${config.clientUrl}/authed-fb?success=true&fbJwt=${fbToken}`);
 	}
 );
 

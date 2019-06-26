@@ -32,7 +32,7 @@ const createUser = (
 };
 
 const getUserStats = (
-	fitbitId: any,
+	fitbitId: string,
 	{
 		theMonth,
 		theYear
@@ -62,9 +62,20 @@ const getUserStats = (
 	});
 };
 
+interface IFitbitActivity {
+	dateTime: string;
+	value: string;
+}
+
 const saveUserStats = (
-	fitbitId: any,
-	{ monthlySteps, monthlyDistance }: any,
+	fitbitId: string,
+	{
+		monthlySteps,
+		monthlyDistance
+	}: {
+		monthlySteps: IFitbitActivity[];
+		monthlyDistance: IFitbitActivity[];
+	},
 	{
 		theMonth,
 		theYear
@@ -140,13 +151,16 @@ const getLocalUserStats = (fitbitId: any) => {
 	return FitbitModel.getFitbitActivity(fitbitId);
 };
 
-const formatFitbitDistance = activity => {
-	const formatted = activity['activities-distance'].map(dayDistance => {
-		return {
-			...dayDistance,
-			value: Math.round(dayDistance.value * 100) / 100
-		};
-	});
+const formatFitbitDistance = (activity: IFitbitActivity[]) => {
+	console.log(activity);
+	const formatted = activity['activities-distance'].map(
+		(dayDistance: IFitbitActivity) => {
+			return {
+				...dayDistance,
+				value: Math.round(parseInt(dayDistance.value) * 100) / 100
+			};
+		}
+	);
 	return {
 		'activities-distance': formatted
 	};
@@ -165,7 +179,7 @@ const formatDataWeek = (activityType: string, data: any) => {
 			};
 		});
 	});
-	return [].concat.apply([], withWeekCommencing).reduce((r, a) => {
+	return [].concat.apply([], withWeekCommencing).reduce((r: any, a: any) => {
 		r[a.week] = r[a.week] || [];
 		r[a.week].push(a);
 		return r;

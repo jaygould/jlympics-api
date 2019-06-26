@@ -1,5 +1,6 @@
+require('dotenv').config();
 export default {
 	authSecret: 'jlympics',
-	clientUrl: 'http://localhost:3000',
-	apiUrl: 'http://localhost:1138'
+	clientUrl: process.env.CLIENT_URL,
+	apiUrl: process.env.API_URL
 };
