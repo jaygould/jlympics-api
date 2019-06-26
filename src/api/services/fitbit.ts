@@ -152,7 +152,6 @@ const getLocalUserStats = (fitbitId: any) => {
 };
 
 const formatFitbitDistance = (activity: IFitbitActivity[]) => {
-	console.log(activity);
 	const formatted = activity['activities-distance'].map(
 		(dayDistance: IFitbitActivity) => {
 			return {
