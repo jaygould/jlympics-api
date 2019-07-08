@@ -46,9 +46,9 @@ app.use(
 app.use(errorHandler());
 
 // API routes
-app.use('/api/v1/auth', authApi);
-app.use('/api/v1/auth/facebook', facebookAuthApi);
-app.use('/api/v1/auth/fitbit', fitbitAuthApi);
+app.use('/v1/auth', authApi);
+app.use('/v1/auth/facebook', facebookAuthApi);
+app.use('/v1/auth/fitbit', fitbitAuthApi);
 
 const server = app.listen(app.get('port'), () => {
 	console.log(

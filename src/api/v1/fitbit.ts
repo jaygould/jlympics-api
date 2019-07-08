@@ -30,7 +30,7 @@ passport.use(
 		{
 			clientID: process.env.FITBIT_CLIENT_ID || '',
 			clientSecret: process.env.FITBIT_CLIENT_SECRET || '',
-			callbackURL: `${config.apiUrl}/api/v1/auth/fitbit/fitbit-callback`,
+			callbackURL: `${config.apiUrl}/v1/auth/fitbit/fitbit-callback`,
 			passReqToCallback: true
 		},
 		(req: any, accessToken: any, refreshToken: any, profile: any, done: any) => {
