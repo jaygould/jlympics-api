@@ -50,6 +50,9 @@ app.use('/v1/auth', authApi);
 app.use('/v1/auth/facebook', facebookAuthApi);
 app.use('/v1/auth/fitbit', fitbitAuthApi);
 
+// Init crons
+require('./cron/index');
+
 const server = app.listen(app.get('port'), () => {
 	console.log(
 		'%s App is running at http://localhost:%d in %s mode',

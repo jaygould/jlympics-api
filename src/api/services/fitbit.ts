@@ -202,6 +202,78 @@ const formatDataMonth = (activityType: string, data: any) => {
 	return withMonth;
 };
 
+const updateAllUserFitbitData = () => {
+	const thisMonth = moment().month();
+	const thisYear = moment().year();
+	const monthsBacklog = 6;
+	let monthCount: any;
+	const getUserStatsPromises = [];
+	for (
+		monthCount = thisMonth;
+		monthCount > thisMonth - monthsBacklog;
+		monthCount--
+	) {
+		// get the year and month from the previous year if the month counts
+		// back in to negative value
+		const theMonth = monthCount < 0 ? monthCount + 12 : monthCount;
+		const theYear = monthCount < 0 ? thisYear - 1 : thisYear;
+		getUserStatsPromises.push(
+			getPastUserStats({ theMonth, theYear }).then((usersData: any) => {
+				return Promise.all(
+					usersData.map((data: any) => {
+						return saveUserStats(
+							data.user.fitbitId,
+							{
+								monthlySteps: data.data[0],
+								monthlyDistance: data.data[1]
+							},
+							{ theMonth, theYear }
+						);
+					})
+				);
+			})
+		);
+	}
+	return Promise.all(getUserStatsPromises);
+};
+
+const updateAllUsersFitbitTokens = () => {
+	return FitbitModel.getFitbitUsers()
+		.then((users: any) => {
+			return Promise.all(
+				users.map((user: ITrackedFitbitUser) => {
+					return user.fitbitRefreshToken
+						? FitbitHelper.fitbitRefreshTokenWrapper(user.fitbitRefreshToken)
+						: null;
+				})
+			);
+		})
+		.then((fitbitResponses: ITrackedFitbitUserSource[]) => {
+			if (fitbitResponses) {
+				return Promise.all(
+					fitbitResponses.map((fitbitResponse: ITrackedFitbitUserSource) => {
+						const {
+							user_id: fitbitId,
+							refresh_token: refreshToken,
+							access_token: accessToken
+						} = fitbitResponse;
+						if (fitbitId && refreshToken && accessToken) {
+							return FitbitModel.updateUserFitbitRefreshToken(
+								fitbitId,
+								refreshToken,
+								accessToken
+							);
+						} else {
+							throw new Error('Error');
+						}
+					})
+				);
+			} else {
+				throw new Error('Error');
+			}
+		});
+};
+
 export {
 	createUser,
 	getUserStats,
@@ -210,5 +282,7 @@ export {
 	getLocalUserStats,
 	formatFitbitDistance,
 	formatDataWeek,
-	formatDataMonth
+	formatDataMonth,
+	updateAllUserFitbitData,
+	updateAllUsersFitbitTokens
 };
