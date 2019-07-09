@@ -3,6 +3,7 @@ import { Router } from 'express';
 const router = Router();
 import passport from 'passport';
 import passportFitbit from 'passport-fitbit-oauth2';
+import url from 'url';
 const moment = require('moment');
 import { verifyToken } from '../middleware/auth';
 
@@ -36,6 +37,12 @@ passport.use(
 		(req: any, accessToken: any, refreshToken: any, profile: any, done: any) => {
 			// when Fitbit account is created, link to the user's Facebook account
 			const cookieData: any = FbHelper.getFbJwtFromCookie(req.cookies);
+			if (!cookieData.fbId) {
+				return done(null, false, {
+					message:
+						'There has been an error getting your information. Error code: COO1.'
+				});
+			}
 			FitbitService.createUser(
 				accessToken,
 				refreshToken,
@@ -59,15 +66,26 @@ router.get(
 		scope: ['activity', 'heartrate', 'location', 'profile']
 	})
 );
-router.get(
-	'/fitbit-callback',
-	passport.authenticate('fitbit', {
-		failureRedirect: `${config.clientUrl}/home?error=true`
-	}),
-	(req, res) => {
+router.get('/fitbit-callback', (req, res, next) => {
+	passport.authenticate('fitbit', (err, user, info) => {
+		if (err) {
+			return next(err);
+		}
+		if (!user) {
+			return res.redirect(
+				url.format({
+					pathname: `${config.clientUrl}/home`,
+					query: {
+						success: false,
+						message: info.message
+					}
+				})
+			);
+		}
+
 		// get the existing fbJwt and add the fitbit id to it
 		const cookieData: any = FbHelper.getFbJwtFromCookie(req.cookies);
-		const fitbitProfile = req.user.fitbitProfile;
+		const fitbitProfile = user.fitbitProfile;
 		cookieData.fitbit = {
 			fitbitId: fitbitProfile.id,
 			fitbitName: fitbitProfile._json.user.displayName,
@@ -90,9 +108,11 @@ router.get(
 				);
 			}
 		);
-		res.redirect(`${config.clientUrl}/authed-fb?success=true&fbJwt=${fbToken}`);
-	}
-);
+		return res.redirect(
+			`${config.clientUrl}/authed-fb?success=true&fbJwt=${fbToken}`
+		);
+	})(req, res, next);
+});
 
 router.post('/refresh-fitbit-tokens', (req, res) => {
 	FitbitModel.getFitbitUsers()
