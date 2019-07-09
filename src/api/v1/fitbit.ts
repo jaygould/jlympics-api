@@ -8,7 +8,6 @@ const moment = require('moment');
 import { verifyToken } from '../middleware/auth';
 
 import * as FbHelper from '../helpers/facebook';
-import * as FitbitHelper from '../helpers/fitbit';
 import * as FbModel from '../models/facebook';
 import * as FitbitModel from '../models/fitbit';
 import * as FbService from '../services/facebook';
