@@ -218,20 +218,29 @@ const updateAllUserFitbitData = () => {
 		const theMonth = monthCount < 0 ? monthCount + 12 : monthCount;
 		const theYear = monthCount < 0 ? thisYear - 1 : thisYear;
 		getUserStatsPromises.push(
-			getPastUserStats({ theMonth, theYear }).then((usersData: any) => {
-				return Promise.all(
-					usersData.map((data: any) => {
-						return saveUserStats(
-							data.user.fitbitId,
-							{
-								monthlySteps: data.data[0],
-								monthlyDistance: data.data[1]
-							},
-							{ theMonth, theYear }
+			getPastUserStats({ theMonth, theYear })
+				.then((usersData: any) => {
+					if (usersData) {
+						return Promise.all(
+							usersData.map((data: any) => {
+								return saveUserStats(
+									data.user.fitbitId,
+									{
+										monthlySteps: data.data[0],
+										monthlyDistance: data.data[1]
+									},
+									{ theMonth, theYear }
+								);
+							})
 						);
-					})
-				);
-			})
+					} else {
+						throw new Error('Error');
+					}
+				})
+				.catch((e: any) => {
+					// error - error upating one or more user accounts with Fitbit data
+					console.log(e);
+				})
 		);
 	}
 	return Promise.all(getUserStatsPromises);
@@ -251,27 +260,31 @@ const updateAllUsersFitbitTokens = () => {
 		.then((fitbitResponses: ITrackedFitbitUserSource[]) => {
 			if (fitbitResponses) {
 				return Promise.all(
-					fitbitResponses.map((fitbitResponse: ITrackedFitbitUserSource) => {
-						const {
-							user_id: fitbitId,
-							refresh_token: refreshToken,
-							access_token: accessToken
-						} = fitbitResponse;
-						if (fitbitId && refreshToken && accessToken) {
-							return FitbitModel.updateUserFitbitRefreshToken(
-								fitbitId,
-								refreshToken,
-								accessToken
-							);
-						} else {
-							throw new Error('Error');
-						}
-					})
+					fitbitResponses
+						// filter out the null responses (users who's refresh was not successful)
+						.filter(resp => resp)
+						.map((fitbitResponse: ITrackedFitbitUserSource) => {
+							const {
+								user_id: fitbitId,
+								refresh_token: refreshToken,
+								access_token: accessToken
+							} = fitbitResponse;
+							if (fitbitId && refreshToken && accessToken) {
+								return FitbitModel.updateUserFitbitRefreshToken(
+									fitbitId,
+									refreshToken,
+									accessToken
+								);
+							} else {
+								throw new Error('Error');
+							}
+						})
 				);
 			} else {
 				throw new Error('Error');
 			}
-		});
+		})
+		.catch((e: any) => console.log(e));
 };
 
 export {

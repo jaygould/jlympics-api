@@ -262,7 +262,7 @@ router.post('/update-past-user-data', (req, res) => {
 				success: true
 			});
 		})
-		.catch(() => {
+		.catch(e => {
 			res.send({
 				success: false
 			});
