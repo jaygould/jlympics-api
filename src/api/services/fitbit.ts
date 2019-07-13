@@ -149,7 +149,7 @@ const getPastUserStats = ({
 					return {
 						success: false,
 						month: theMonth,
-						fitbitName: user.fitbitName,
+						user,
 						reason: e.statusCode && e.statusCode === 401 ? 'auth' : null
 					};
 				});
@@ -231,9 +231,9 @@ const updateAllUserFitbitData = () => {
 		getUserStatsPromises.push(
 			getPastUserStats({ theMonth, theYear })
 				.then((usersData: any) => {
-					if (usersData.success === true) {
-						return Promise.all(
-							usersData.map((data: any) => {
+					return Promise.all(
+						usersData.map((data: any, i: any) => {
+							if (data.success === true) {
 								return saveUserStats(
 									data.user.fitbitId,
 									{
@@ -241,12 +241,17 @@ const updateAllUserFitbitData = () => {
 										monthlyDistance: data.data[1]
 									},
 									{ theMonth, theYear }
-								);
-							})
-						);
-					} else {
-						return usersData;
-					}
+								).then(() => {
+									return usersData[i];
+								});
+							} else {
+								// user data was not retrieved successfully,
+								// so send back the response still as it is already
+								// formatted from getPastUserStats()
+								return usersData[i];
+							}
+						})
+					);
 				})
 				.catch((e: any) => {
 					console.log(e);
