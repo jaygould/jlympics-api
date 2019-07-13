@@ -136,12 +136,23 @@ const getPastUserStats = ({
 					user.fitbitId,
 					user.fitbitToken
 				)
-			]).then(data => {
-				return {
-					user,
-					data
-				};
-			});
+			])
+				.then(data => {
+					return {
+						success: true,
+						month: theMonth,
+						user,
+						data
+					};
+				})
+				.catch(e => {
+					return {
+						success: false,
+						month: theMonth,
+						fitbitName: user.fitbitName,
+						reason: e.statusCode && e.statusCode === 401 ? 'auth' : null
+					};
+				});
 		});
 		return Promise.all(userPromises);
 	});
@@ -220,7 +231,7 @@ const updateAllUserFitbitData = () => {
 		getUserStatsPromises.push(
 			getPastUserStats({ theMonth, theYear })
 				.then((usersData: any) => {
-					if (usersData) {
+					if (usersData.success === true) {
 						return Promise.all(
 							usersData.map((data: any) => {
 								return saveUserStats(
@@ -234,11 +245,10 @@ const updateAllUserFitbitData = () => {
 							})
 						);
 					} else {
-						throw new Error('Error');
+						return usersData;
 					}
 				})
 				.catch((e: any) => {
-					// error - error upating one or more user accounts with Fitbit data
 					console.log(e);
 				})
 		);

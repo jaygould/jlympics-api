@@ -259,7 +259,8 @@ router.post('/update-past-user-data', (req, res) => {
 	FitbitService.updateAllUserFitbitData()
 		.then(updated => {
 			res.send({
-				success: true
+				success: true,
+				updated
 			});
 		})
 		.catch(e => {
