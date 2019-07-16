@@ -115,9 +115,10 @@ router.get('/fitbit-callback', (req, res, next) => {
 
 router.post('/refresh-fitbit-tokens', (req, res) => {
 	FitbitService.updateAllUsersFitbitTokens()
-		.then(() => {
+		.then((response: any) => {
 			res.send({
-				success: true
+				success: true,
+				response
 			});
 		})
 		.catch(() => {

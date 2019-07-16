@@ -269,7 +269,7 @@ const updateAllUsersFitbitTokens = () => {
 					return user.fitbitRefreshToken
 						? FitbitHelper.fitbitRefreshTokenWrapper(user.fitbitRefreshToken).catch(
 								e => {
-									throw {
+									return {
 										success: false,
 										userName: user.fitbitName,
 										reason: e.statusCode && e.statusCode === 400 ? 'token' : null
@@ -281,6 +281,9 @@ const updateAllUsersFitbitTokens = () => {
 			);
 		})
 		.then((fitbitResponses: ITrackedFitbitUserSource[]) => {
+			if (fitbitResponses.success && fitbitResponses.success === false) {
+				return fitbitResponses;
+			}
 			if (fitbitResponses) {
 				return Promise.all(
 					fitbitResponses
