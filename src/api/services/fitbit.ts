@@ -281,30 +281,28 @@ const updateAllUsersFitbitTokens = () => {
 			);
 		})
 		.then((fitbitResponses: ITrackedFitbitUserSource[]) => {
-			if (fitbitResponses.success && fitbitResponses.success === false) {
-				return fitbitResponses;
-			}
 			if (fitbitResponses) {
 				return Promise.all(
-					fitbitResponses
-						// filter out the null responses (users who's refresh was not successful)
-						.filter(resp => resp)
-						.map((fitbitResponse: ITrackedFitbitUserSource) => {
-							const {
-								user_id: fitbitId,
-								refresh_token: refreshToken,
-								access_token: accessToken
-							} = fitbitResponse;
-							if (fitbitId && refreshToken && accessToken) {
-								return FitbitModel.updateUserFitbitRefreshToken(
-									fitbitId,
-									refreshToken,
-									accessToken
-								);
-							} else {
-								throw new Error('Error');
-							}
-						})
+					fitbitResponses.map((fitbitResponse: ITrackedFitbitUserSource) => {
+						// send back the error from the then() above
+						if (fitbitResponse.success === false) {
+							return fitbitResponse;
+						}
+						const {
+							user_id: fitbitId,
+							refresh_token: refreshToken,
+							access_token: accessToken
+						} = fitbitResponse;
+						if (fitbitId && refreshToken && accessToken) {
+							return FitbitModel.updateUserFitbitRefreshToken(
+								fitbitId,
+								refreshToken,
+								accessToken
+							);
+						} else {
+							throw new Error('Error');
+						}
+					})
 				);
 			} else {
 				throw new Error('Error');
