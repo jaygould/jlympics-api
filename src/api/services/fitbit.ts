@@ -267,7 +267,15 @@ const updateAllUsersFitbitTokens = () => {
 			return Promise.all(
 				users.map((user: ITrackedFitbitUser) => {
 					return user.fitbitRefreshToken
-						? FitbitHelper.fitbitRefreshTokenWrapper(user.fitbitRefreshToken)
+						? FitbitHelper.fitbitRefreshTokenWrapper(user.fitbitRefreshToken).catch(
+								e => {
+									throw {
+										success: false,
+										userName: user.fitbitName,
+										reason: e.statusCode && e.statusCode === 400 ? 'token' : null
+									};
+								}
+						  )
 						: null;
 				})
 			);
