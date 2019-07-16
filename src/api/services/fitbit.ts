@@ -263,7 +263,7 @@ const updateAllUserFitbitData = () => {
 
 const updateAllUsersFitbitTokens = () => {
 	return FitbitModel.getFitbitUsers()
-		.then((users: any) => {
+		.then((users: ITrackedFitbitUser[]) => {
 			return Promise.all(
 				users.map((user: ITrackedFitbitUser) => {
 					return user.fitbitRefreshToken
@@ -293,17 +293,24 @@ const updateAllUsersFitbitTokens = () => {
 							refresh_token: refreshToken,
 							access_token: accessToken
 						} = fitbitResponse;
-						if (fitbitId && refreshToken && accessToken) {
-							return FitbitModel.updateUserFitbitRefreshToken(
-								fitbitId,
-								refreshToken,
-								accessToken
-							);
-						} else {
-							throw new Error('Error');
-						}
+						return FitbitModel.updateUserFitbitRefreshToken(
+							fitbitId,
+							refreshToken,
+							accessToken
+						);
 					})
-				);
+				).then(resp => {
+					// loop through the success/errors and format the response back to the client.
+					// error responses have already been formatted, but success has not yet
+					return resp.map(userUpdated => {
+						return userUpdated.success === false
+							? userUpdated
+							: {
+									success: true,
+									userName: userUpdated[1][0].fitbitName
+							  };
+					});
+				});
 			} else {
 				throw new Error('Error');
 			}

@@ -39,7 +39,7 @@ const updateUserFitbitRefreshToken = (
 ) => {
 	return TrackedUsers.update(
 		{ fitbitRefreshToken: refreshToken, fitbitToken: accessToken },
-		{ where: { fitbitId } }
+		{ where: { fitbitId }, returning: true }
 	);
 };
 

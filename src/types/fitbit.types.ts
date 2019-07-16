@@ -9,9 +9,9 @@ interface ITrackedFitbitUser {
 	updatedAt?: string;
 }
 interface ITrackedFitbitUserSource {
-	user_id?: number;
-	refresh_token?: string;
-	access_token?: string;
+	user_id: number;
+	refresh_token: string;
+	access_token: string;
 	success?: boolean;
 }
 interface IFitbitActivityDb {
